@@ -8,6 +8,9 @@ import java.time.Duration
 import kotlin.concurrent.thread
 
 fun main() {
+
+
+
     KafkaFactory.consumer<String, String>(
         topic = "demo_java",
         groupId = "my-java-application",

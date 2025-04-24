@@ -100,3 +100,9 @@ enum class PartitionAssignmentStrategy(val value: String) {
     Range(RangeAssignor::class.qualifiedName!!),
     CooperativeSticky(CooperativeStickyAssignor::class.qualifiedName!!)
 }
+
+enum class Acks(val value: Int) {
+    No(0),
+    LeaderOnly(1),
+    All(-1)
+}

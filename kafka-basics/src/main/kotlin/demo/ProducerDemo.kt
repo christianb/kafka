@@ -1,7 +1,7 @@
-package kafka.course.demo
+package demo
 
-import demo.config.KafkaConfig
-import org.apache.kafka.clients.producer.KafkaProducer
+import kafka.course.demo.KafkaFactory
+import kafka.course.demo.use
 import org.apache.kafka.clients.producer.ProducerRecord
 
 fun main() {
@@ -10,7 +10,7 @@ fun main() {
         /* value = */ "hello world"
     )
 
-    KafkaProducer<String, String>(KafkaConfig.properties).use {
+    KafkaFactory.producer<String, String>().use {
         send(producerRecord)
     }
 }

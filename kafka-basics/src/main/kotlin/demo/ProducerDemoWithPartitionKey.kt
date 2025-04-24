@@ -10,29 +10,28 @@ import java.lang.Exception
 
 fun main() {
     KafkaFactory.producer<String, String>().use {
-        for (i in 0 until 10) {
-            val producerRecord = ProducerRecord<String, String>(
-                /* topic = */ "demo_java",
-                /* value = */ "hello world $i"
-            )
-            send(producerRecord, callback)
+        repeat(3) {
+            for (i in 0 until 10) {
+                val key = "id_$i"
+                val producerRecord = ProducerRecord<String, String>(
+                    /* topic = */ "demo_java",
+                    /* key = */ key,
+                    /* value = */ "hello world $i"
+                )
+                producerRecord.key()
+                send(producerRecord, callback(key))
+            }
         }
     }
 }
 
-private val callback = object : Callback {
+private fun callback(key: String) = object : Callback {
     override fun onCompletion(metadata: RecordMetadata, exception: Exception?) {
         if (exception != null) {
             log.error("Error while producing", exception)
             return
         }
 
-        log.info(
-            "received metadata \n"
-                    + "Topic: ${metadata.topic()} \n"
-                    + "Partition: ${metadata.partition()} \n"
-                    + "Offset: ${metadata.offset()} \n"
-                    + "Timestamp: ${metadata.timestamp()}"
-        )
+        log.info("Key: $key | Partition: ${metadata.partition()}")
     }
 }

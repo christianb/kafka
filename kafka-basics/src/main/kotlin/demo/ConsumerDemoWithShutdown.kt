@@ -5,14 +5,10 @@ import kafka.course.demo.KafkaFactory
 import kafka.course.demo.log
 import kafka.course.demo.use
 import java.time.Duration
-import kotlin.concurrent.thread
 
 fun main() {
-
-
-
     KafkaFactory.consumer<String, String>(
-        topic = "demo_java",
+        topic = "kotlin_demo",
         groupId = "my-java-application",
         autoOffsetReset = AutoOffsetReset.EARLIEST
     ).use {

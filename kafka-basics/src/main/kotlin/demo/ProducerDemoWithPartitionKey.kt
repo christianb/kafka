@@ -13,8 +13,8 @@ fun main() {
         repeat(3) {
             for (i in 0 until 10) {
                 val key = "id_$i"
-                val producerRecord = ProducerRecord<String, String>(
-                    /* topic = */ "demo_java",
+                val producerRecord = ProducerRecord(
+                    /* topic = */ "kotlin_demo",
                     /* key = */ key,
                     /* value = */ "hello world $i"
                 )

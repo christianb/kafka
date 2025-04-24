@@ -1,6 +1,7 @@
 package kafka.course.demo
 
 import demo.config.KafkaConfig
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.CooperativeStickyAssignor
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.RangeAssignor
@@ -55,13 +56,18 @@ object KafkaFactory {
         groupId: String,
         autoOffsetReset: AutoOffsetReset = AutoOffsetReset.EARLIEST,
         partitionAssignmentStrategy: PartitionAssignmentStrategy = PartitionAssignmentStrategy.Range,
+        rebalanceListener: ConsumerRebalanceListener? = null,
     ): KafkaConsumer<K, V> {
         val properties: Properties = ConsumerPropertiesBuilder(groupId)
             .withAutoOffsetReset(autoOffsetReset)
             .withPartitionAssignmentStrategy(partitionAssignmentStrategy)
             .build()
 
-        return KafkaConsumer<K, V>(properties).apply { subscribe(listOf(topic)) }
+        return KafkaConsumer<K, V>(properties).apply {
+            val topics = listOf(topic)
+            if (rebalanceListener != null) subscribe(topics, rebalanceListener)
+            else subscribe(topics)
+        }
     }
 }
 

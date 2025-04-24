@@ -64,3 +64,6 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group my
 ```bash
 kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic --from-beginning --formatter org.apache.kafka.tools.consumer.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --property print.partition=true
 ```
+
+## Links
+[kafka-beginners-course](https://github.com/conduktor/kafka-beginners-course)

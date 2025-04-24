@@ -1,8 +1,8 @@
 package demo
 
-import kafka.course.demo.KafkaFactory
-import kafka.course.demo.log
-import kafka.course.demo.use
+import config.KafkaFactory
+import config.log
+import config.use
 import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata

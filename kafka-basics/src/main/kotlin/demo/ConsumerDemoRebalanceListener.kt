@@ -1,10 +1,10 @@
 package demo
 
-import kafka.course.demo.AutoOffsetReset
-import kafka.course.demo.KafkaFactory
-import kafka.course.demo.PartitionAssignmentStrategy
-import kafka.course.demo.log
-import kafka.course.demo.use
+import config.AutoOffsetReset
+import config.KafkaFactory
+import config.PartitionAssignmentStrategy
+import config.log
+import config.use
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.common.TopicPartition
 import java.time.Duration

@@ -1,9 +1,9 @@
 package demo
 
-import kafka.course.demo.AutoOffsetReset
-import kafka.course.demo.KafkaFactory
-import kafka.course.demo.log
-import kafka.course.demo.use
+import config.AutoOffsetReset
+import config.KafkaFactory
+import config.log
+import config.use
 import java.time.Duration
 
 fun main() {
@@ -22,5 +22,3 @@ fun main() {
         }
     }
 }
-
-

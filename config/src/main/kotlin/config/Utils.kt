@@ -1,6 +1,5 @@
-package kafka.course.demo
+package config
 
-import demo.config.KafkaConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.CooperativeStickyAssignor
 import org.apache.kafka.clients.consumer.KafkaConsumer

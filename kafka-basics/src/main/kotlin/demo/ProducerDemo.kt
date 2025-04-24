@@ -1,7 +1,7 @@
 package demo
 
-import kafka.course.demo.KafkaFactory
-import kafka.course.demo.use
+import config.KafkaFactory
+import config.use
 import org.apache.kafka.clients.producer.ProducerRecord
 
 fun main() {

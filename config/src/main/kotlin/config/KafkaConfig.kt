@@ -1,4 +1,4 @@
-package demo.config
+package config
 
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer

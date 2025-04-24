@@ -6,3 +6,4 @@ I used Kafka 4.0.0 installed view HomeBrew.
 ## Links
 - [GitHub: kafka-beginners-course](https://github.com/conduktor/kafka-beginners-course)
 - [How To Set Up a Multi-Node Kafka Cluster using KRaft](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-multi-node-kafka-cluster-using-kraft)
+- [How to (actually) Configure a Kafka Cluster in KRaft Mode For Testing & Development](https://medium.com/@hjdjoo/how-to-actually-configure-a-kafka-cluster-in-kraft-mode-for-testing-development-8f90f09e36b1)

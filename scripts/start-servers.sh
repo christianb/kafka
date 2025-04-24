@@ -3,14 +3,16 @@
 # Change to the directory of the script
 cd "$(dirname "$0")" || exit
 
-NODE1_PROPERTIES="../node.1.properties"
+NODE1_PROPERTIES="../config/node.1.properties"
 NODE1_LOG="../node1.log"
 
-NODE2_PROPERTIES="../node.2.properties"
+NODE2_PROPERTIES="../config/node.2.properties"
 NODE2_LOG="../node2.log"
 
-NODE3_PROPERTIES="../node.3.properties"
+NODE3_PROPERTIES="../config/node.3.properties"
 NODE3_LOG="../node3.log"
+
+rm $NODE1_LOG $NODE2_LOG $NODE3_LOG
 
 # Start Node 1
 nohup kafka-server-start $NODE1_PROPERTIES > $NODE1_LOG 2>&1 &

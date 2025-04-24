@@ -1,7 +1,9 @@
 package kafka.course.demo
 
 import demo.config.KafkaConfig
+import org.apache.kafka.clients.consumer.CooperativeStickyAssignor
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.RangeAssignor
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.errors.WakeupException
 import java.util.Properties
@@ -40,20 +42,26 @@ fun <K, V> KafkaConsumer<K, V>.use(block: KafkaConsumer<K, V>.() -> Unit) {
 }
 
 object KafkaFactory {
+    /**
+     * Creates a new producer
+     */
     fun <K, V> producer(): KafkaProducer<K, V> = KafkaProducer<K, V>(KafkaConfig.producerProperties)
 
+    /**
+     * Creates a new consumer.
+     */
     fun <K, V> consumer(
         topic: String,
         groupId: String,
-        autoOffsetReset: AutoOffsetReset = AutoOffsetReset.EARLIEST
+        autoOffsetReset: AutoOffsetReset = AutoOffsetReset.EARLIEST,
+        partitionAssignmentStrategy: PartitionAssignmentStrategy = PartitionAssignmentStrategy.Range,
     ): KafkaConsumer<K, V> {
         val properties: Properties = ConsumerPropertiesBuilder(groupId)
             .withAutoOffsetReset(autoOffsetReset)
+            .withPartitionAssignmentStrategy(partitionAssignmentStrategy)
             .build()
 
-        val consumer = KafkaConsumer<K, V>(properties)
-        consumer.subscribe(listOf(topic))
-        return consumer
+        return KafkaConsumer<K, V>(properties).apply { subscribe(listOf(topic)) }
     }
 }
 
@@ -62,6 +70,11 @@ class ConsumerPropertiesBuilder(val groupId: String) {
 
     fun withAutoOffsetReset(autoOffsetReset: AutoOffsetReset): ConsumerPropertiesBuilder {
         properties.setProperty("auto.offset.reset", autoOffsetReset.value)
+        return this
+    }
+
+    fun withPartitionAssignmentStrategy(partitionAssignmentStrategy: PartitionAssignmentStrategy): ConsumerPropertiesBuilder {
+        properties.setProperty("partition.assignment.strategy", partitionAssignmentStrategy.value)
         return this
     }
 
@@ -76,4 +89,9 @@ enum class AutoOffsetReset(val value: String) {
     NONE("none"),
     EARLIEST("earliest"),
     LATEST("latest")
+}
+
+enum class PartitionAssignmentStrategy(val value: String) {
+    Range(RangeAssignor::class.qualifiedName!!),
+    CooperativeSticky(CooperativeStickyAssignor::class.qualifiedName!!)
 }

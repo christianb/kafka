@@ -16,7 +16,7 @@ object KafkaFactory {
      *
      * @param [properties] additional properties. You do not need to incl [KafkaConfig.producerProperties]
      */
-    fun <K, V> producer(properties: Properties): KafkaProducer<K, V> {
+    fun <K, V> producer(properties: Properties = Properties()): KafkaProducer<K, V> {
         properties.putAll(KafkaConfig.producerProperties)
         return KafkaProducer<K, V>(properties)
     }

@@ -20,7 +20,10 @@ class WikimediaChangeHandler(
     }
 
     override fun onMessage(event: String, messageEvent: MessageEvent) {
-        if (messageEvent.data.startsWith("event: message")) throw IllegalStateException("not valid json")
+        if (!messageEvent.data.startsWith("{")) {
+            log.warn("not valid json -> ${messageEvent.data}")
+            return
+        }
         producer.send(ProducerRecord(topic, /* value = */ messageEvent.data))
     }
 

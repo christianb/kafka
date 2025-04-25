@@ -3,7 +3,6 @@ package demo.opensearch
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import com.google.gson.stream.MalformedJsonException
 import config.AutoOffsetReset
 import config.KafkaFactory
 import config.WIKIMEDIA_TOPIC
@@ -15,6 +14,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.opensearch.OpenSearchStatusException
+import org.opensearch.action.bulk.BulkRequest
 import org.opensearch.action.index.IndexRequest
 import org.opensearch.client.RequestOptions.DEFAULT
 import org.opensearch.client.indices.CreateIndexRequest
@@ -52,39 +52,37 @@ fun main() {
     KafkaFactory.consumer<String, String>(topic = WIKIMEDIA_TOPIC, properties).use {
         while (true) {
             val consumerRecords: ConsumerRecords<String, String> = poll(Duration.ofSeconds(3))
-            log.info("received ${consumerRecords.count()} records")
+            val bulkRequest = BulkRequest()
 
             for (record: ConsumerRecord<String, String> in consumerRecords) {
-                if (record.value().startsWith("event: message")) {
+                if (!record.value().startsWith("{")) {
                     log.error("record.value() is not valid json: ${record.value()}")
                     continue
                 }
 
                 val json = record.value().removeLogParams()
-
                 val wikimediaId = deserializeId(json)
                 val indexRequest: IndexRequest = IndexRequest(WIKIMEDIA_INDEX)
                     .source(/* source = */ json, /* mediaType = */ XContentType.JSON)
                     .id(wikimediaId)
 
-                try {
-                    val response = openSearchClient.index(indexRequest, /* options = */ DEFAULT)
-                    // log.info("Inserted document into OpenSearch: ${response.id}")
-                } catch (e: OpenSearchStatusException) {
-                    log.error("error processing wikimedia-id: $wikimediaId", e)
-                    log.info("json: $json")
-                } catch (e: IOException) {
-                    log.error("error", e)
-                }
+                bulkRequest.add(indexRequest)
             }
 
-            // commit offsets after the batch has been consumed
-            commitSync()
-            if (consumerRecords.count() > 0) log.info("Offsets committed!")
+            if (bulkRequest.numberOfActions() == 0) continue
+
+            try {
+                val response = openSearchClient.bulk(bulkRequest, DEFAULT)
+                log.info("Inserted ${response.items.size} records")
+                // commit offsets after the batch has been consumed
+                commitSync()
+            } catch (e: OpenSearchStatusException) {
+                log.error("error", e)
+            } catch (e: IOException) {
+                log.error("error", e)
+            }
         }
     }
-
-
 }
 
 private fun deserializeId(json: String): String {
@@ -100,10 +98,6 @@ private fun deserializeId(json: String): String {
 
 private fun String.removeLogParams(): String {
     val jsonElement: JsonElement = JsonParser.parseString(this)
-
-    // Remove the log_params field if it exists
     if (jsonElement.isJsonObject) jsonElement.asJsonObject.remove("log_params")
-
-    // Convert back to JSON string
     return Gson().toJson(jsonElement)
 }

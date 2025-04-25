@@ -44,4 +44,4 @@ echo "Number of replicas: $REPLICAS"
 echo "Topic: $TOPIC"
 echo "Number of partitions: $PARTITIONS"
 
-# kafka-topics --bootstrap-server localhost:9092 --topic "${TOPIC_NAME}" --create --partitions "${NUM_PARTITIONS}" --replication-factor 2
+kafka-topics --bootstrap-server localhost:9092 --topic "${TOPIC}" --create --partitions "$PARTITIONS" --replication-factor "$REPLICAS"

@@ -7,13 +7,12 @@ import org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CON
 import org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
-import java.util.Properties
+import java.util.*
 
 object KafkaConfig {
     private const val SERVER_ADDRESS = "127.0.0.1:9092"
 
     val producerProperties = Properties().apply {
-
         setProperty(BOOTSTRAP_SERVERS_CONFIG, SERVER_ADDRESS) // connect unsecure to local host
         setProperty(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.qualifiedName)
         setProperty(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.qualifiedName)

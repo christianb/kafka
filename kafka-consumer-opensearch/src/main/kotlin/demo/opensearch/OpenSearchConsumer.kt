@@ -1,15 +1,20 @@
 package demo.opensearch
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import com.google.gson.stream.MalformedJsonException
 import config.AutoOffsetReset
 import config.KafkaFactory
 import config.WIKIMEDIA_TOPIC
 import config.log
 import config.use
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG
 import org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.opensearch.OpenSearchStatusException
 import org.opensearch.action.index.IndexRequest
 import org.opensearch.client.RequestOptions.DEFAULT
 import org.opensearch.client.indices.CreateIndexRequest
@@ -41,6 +46,7 @@ fun main() {
     val properties = Properties().apply {
         setProperty(GROUP_ID_CONFIG, OPENSEARCH_CONSUMER_ID)
         setProperty(AUTO_OFFSET_RESET_CONFIG, AutoOffsetReset.LATEST.value)
+        setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
     }
 
     KafkaFactory.consumer<String, String>(topic = WIKIMEDIA_TOPIC, properties).use {
@@ -49,18 +55,32 @@ fun main() {
             log.info("received ${consumerRecords.count()} records")
 
             for (record: ConsumerRecord<String, String> in consumerRecords) {
-                val wikimediaId = deserializeId(record.value())
+                if (record.value().startsWith("event: message")) {
+                    log.error("record.value() is not valid json: ${record.value()}")
+                    continue
+                }
+
+                val json = record.value().removeLogParams()
+
+                val wikimediaId = deserializeId(json)
                 val indexRequest: IndexRequest = IndexRequest(WIKIMEDIA_INDEX)
-                    .source(/* source = */ record.value(), /* mediaType = */ XContentType.JSON)
+                    .source(/* source = */ json, /* mediaType = */ XContentType.JSON)
                     .id(wikimediaId)
 
                 try {
                     val response = openSearchClient.index(indexRequest, /* options = */ DEFAULT)
-                    log.info("Inserted document into OpenSearch: ${response.id}")
+                    // log.info("Inserted document into OpenSearch: ${response.id}")
+                } catch (e: OpenSearchStatusException) {
+                    log.error("error processing wikimedia-id: $wikimediaId", e)
+                    log.info("json: $json")
                 } catch (e: IOException) {
                     log.error("error", e)
                 }
             }
+
+            // commit offsets after the batch has been consumed
+            commitSync()
+            if (consumerRecords.count() > 0) log.info("Offsets committed!")
         }
     }
 
@@ -68,7 +88,22 @@ fun main() {
 }
 
 private fun deserializeId(json: String): String {
-    return JsonParser.parseString(json).asJsonObject
-        .get("meta").asJsonObject
-        .get("id").asString
+    return try {
+        JsonParser.parseString(json).asJsonObject
+            .getAsJsonObject("meta")
+            .get("id").asString
+    } catch (e: Exception) {
+        log.error("could not parse Json: $json")
+        null!!
+    }
+}
+
+private fun String.removeLogParams(): String {
+    val jsonElement: JsonElement = JsonParser.parseString(this)
+
+    // Remove the log_params field if it exists
+    if (jsonElement.isJsonObject) jsonElement.asJsonObject.remove("log_params")
+
+    // Convert back to JSON string
+    return Gson().toJson(jsonElement)
 }

@@ -2,6 +2,7 @@ package demo.wikimedia
 
 import com.launchdarkly.eventsource.EventSource
 import config.KafkaFactory
+import config.WIKIMEDIA_STREAM_URL
 import config.WIKIMEDIA_TOPIC
 import config.use
 import org.apache.kafka.clients.producer.ProducerConfig.*
@@ -19,7 +20,7 @@ fun main() {
 
     KafkaFactory.producer<String, String>(properties).use {
         val eventHandler = WikimediaChangeHandler(producer = this, topic = WIKIMEDIA_TOPIC)
-        val uri = URI.create("https://stream.wikimedia.org/v2/stream/recentchange")
+        val uri = URI.create(WIKIMEDIA_STREAM_URL)
         val eventSource = EventSource.Builder(eventHandler, uri).build()
 
         eventSource.start()

@@ -1,12 +1,13 @@
 # Kafka 
 This is all about learning Kafka using practical examples.
-
 I used Kafka 4.0.0 installed view HomeBrew.
 
 This project is based on [Learn Apache Kafka for Beginners v3](https://www.udemy.com/course/apache-kafka) by [Stephane Maarek](https://github.com/simplesteph)
 
-## Setup
+This project reads the wikimedia stream `"https://stream.wikimedia.org/v2/stream/recentchange"` (Producer) 
+and sends it to OpenSearch `https://app.bonsai.io/` (Consumer).
 
+## Setup
 ### OpenSearch
 Set OpenSearch Url to `kafka-consumer-opensearch/.env`.
 ```bash

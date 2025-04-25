@@ -5,6 +5,7 @@ import config.AutoOffsetReset
 import config.KafkaFactory
 import config.WIKIMEDIA_TOPIC
 import config.log
+import config.use
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.opensearch.action.index.IndexRequest
@@ -20,15 +21,9 @@ private const val OPENSEARCH_CONSUMER_ID = "opensearch-consumer"
 
 fun main() {
     val openSearchClient = OpenSearch.client
-    val indicesClient = openSearchClient.indices()
-
-    val consumer = KafkaFactory.consumer<String, String>(
-        topic = WIKIMEDIA_TOPIC,
-        groupId = OPENSEARCH_CONSUMER_ID,
-        autoOffsetReset = AutoOffsetReset.LATEST
-    )
 
     try {
+        val indicesClient = openSearchClient.indices()
         val exists = indicesClient.exists(GetIndexRequest(WIKIMEDIA_INDEX), /* options = */ DEFAULT)
         if (!exists) {
             indicesClient.create(CreateIndexRequest(WIKIMEDIA_INDEX), /* options = */ DEFAULT)
@@ -40,24 +35,32 @@ fun main() {
         openSearchClient.close()
     }
 
-    while (true) {
-        val consumerRecords: ConsumerRecords<String, String> = consumer.poll(Duration.ofSeconds(3))
-        log.info("received ${consumerRecords.count()} records")
+    KafkaFactory.consumer<String, String>(
+        topic = WIKIMEDIA_TOPIC,
+        groupId = OPENSEARCH_CONSUMER_ID,
+        autoOffsetReset = AutoOffsetReset.LATEST
+    ).use {
+        while (true) {
+            val consumerRecords: ConsumerRecords<String, String> = poll(Duration.ofSeconds(3))
+            log.info("received ${consumerRecords.count()} records")
 
-        for (record: ConsumerRecord<String, String> in consumerRecords) {
-            val wikimediaId = deserializeId(record.value())
-            val indexRequest: IndexRequest = IndexRequest(WIKIMEDIA_INDEX)
-                .source(/* source = */ record.value(), /* mediaType = */ XContentType.JSON)
-                .id(wikimediaId)
+            for (record: ConsumerRecord<String, String> in consumerRecords) {
+                val wikimediaId = deserializeId(record.value())
+                val indexRequest: IndexRequest = IndexRequest(WIKIMEDIA_INDEX)
+                    .source(/* source = */ record.value(), /* mediaType = */ XContentType.JSON)
+                    .id(wikimediaId)
 
-            try {
-                val response = openSearchClient.index(indexRequest, /* options = */ DEFAULT)
-                log.info("Inserted document into OpenSearch: ${response.id}")
-            } catch (e: IOException) {
-                log.error("error", e)
+                try {
+                    val response = openSearchClient.index(indexRequest, /* options = */ DEFAULT)
+                    log.info("Inserted document into OpenSearch: ${response.id}")
+                } catch (e: IOException) {
+                    log.error("error", e)
+                }
             }
         }
     }
+
+
 }
 
 private fun deserializeId(json: String): String {

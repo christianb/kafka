@@ -1,5 +1,6 @@
 package demo.opensearch
 
+import com.google.gson.JsonParser
 import config.AutoOffsetReset
 import config.KafkaFactory
 import config.WIKIMEDIA_TOPIC
@@ -44,8 +45,10 @@ fun main() {
         log.info("received ${consumerRecords.count()} records")
 
         for (record: ConsumerRecord<String, String> in consumerRecords) {
+            val wikimediaId = deserializeId(record.value())
             val indexRequest: IndexRequest = IndexRequest(WIKIMEDIA_INDEX)
                 .source(/* source = */ record.value(), /* mediaType = */ XContentType.JSON)
+                .id(wikimediaId)
 
             try {
                 val response = openSearchClient.index(indexRequest, /* options = */ DEFAULT)
@@ -57,3 +60,8 @@ fun main() {
     }
 }
 
+private fun deserializeId(json: String): String {
+    return JsonParser.parseString(json).asJsonObject
+        .get("meta").asJsonObject
+        .get("id").asString
+}

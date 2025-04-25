@@ -1,17 +1,31 @@
 package demo.opensearch
 
+import config.AutoOffsetReset
+import config.KafkaFactory
+import config.WIKIMEDIA_TOPIC
 import config.log
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.opensearch.action.index.IndexRequest
 import org.opensearch.client.RequestOptions.DEFAULT
 import org.opensearch.client.indices.CreateIndexRequest
 import org.opensearch.client.indices.GetIndexRequest
+import org.opensearch.common.xcontent.XContentType
 import java.io.IOException
+import java.time.Duration
 
 private const val WIKIMEDIA_INDEX = "wikimedia"
+private const val OPENSEARCH_CONSUMER_ID = "opensearch-consumer"
 
 fun main() {
-    val client = OpenSearch.client
+    val openSearchClient = OpenSearch.client
+    val indicesClient = openSearchClient.indices()
 
-    val indicesClient = client.indices()
+    val consumer = KafkaFactory.consumer<String, String>(
+        topic = WIKIMEDIA_TOPIC,
+        groupId = OPENSEARCH_CONSUMER_ID,
+        autoOffsetReset = AutoOffsetReset.LATEST
+    )
 
     try {
         val exists = indicesClient.exists(GetIndexRequest(WIKIMEDIA_INDEX), /* options = */ DEFAULT)
@@ -22,8 +36,24 @@ fun main() {
 
     } catch (e: IOException) {
         log.error("error", e)
-    } finally {
-        client.close()
+        openSearchClient.close()
+    }
+
+    while (true) {
+        val consumerRecords: ConsumerRecords<String, String> = consumer.poll(Duration.ofSeconds(3))
+        log.info("received ${consumerRecords.count()} records")
+
+        for (record: ConsumerRecord<String, String> in consumerRecords) {
+            val indexRequest: IndexRequest = IndexRequest(WIKIMEDIA_INDEX)
+                .source(/* source = */ record.value(), /* mediaType = */ XContentType.JSON)
+
+            try {
+                val response = openSearchClient.index(indexRequest, /* options = */ DEFAULT)
+                log.info("Inserted document into OpenSearch: ${response.id}")
+            } catch (e: IOException) {
+                log.error("error", e)
+            }
+        }
     }
 }
 

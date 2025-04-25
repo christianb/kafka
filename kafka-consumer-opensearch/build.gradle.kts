@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":config"))
 
     // https://mvnrepository.com/artifact/org.opensearch.client/opensearch-rest-high-level-client
-    implementation("org.opensearch.client:opensearch-rest-high-level-client:1.3.2")
+    implementation("org.opensearch.client:opensearch-rest-high-level-client:2.19.1")
 
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation("com.google.code.gson:gson:2.13.1")

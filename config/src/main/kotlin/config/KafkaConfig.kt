@@ -10,15 +10,20 @@ import org.apache.kafka.common.serialization.StringSerializer
 import java.util.Properties
 
 object KafkaConfig {
+    private const val SERVER_ADDRESS = "127.0.0.1:9092"
+
     val producerProperties = Properties().apply {
-        setProperty(BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092") // connect unsecure to local host
+
+        setProperty(BOOTSTRAP_SERVERS_CONFIG, SERVER_ADDRESS) // connect unsecure to local host
         setProperty(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.qualifiedName)
         setProperty(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.qualifiedName)
     }
+        get() = field.clone() as Properties
 
     val consumerProperties = Properties().apply {
-        setProperty(BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092") // connect unsecure to local host
+        setProperty(BOOTSTRAP_SERVERS_CONFIG, SERVER_ADDRESS) // connect unsecure to local host
         setProperty(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.qualifiedName)
         setProperty(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.qualifiedName)
     }
+        get() = field.clone() as Properties
 }

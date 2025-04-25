@@ -3,11 +3,20 @@ package demo.wikimedia
 import com.launchdarkly.eventsource.EventSource
 import config.KafkaFactory
 import config.use
+import org.apache.kafka.clients.producer.ProducerConfig.*
 import java.net.URI
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 fun main() {
-    KafkaFactory.producer<String, String>().use {
+    val properties = Properties().apply {
+        // high throughput producer config
+        setProperty(LINGER_MS_CONFIG, "20")
+        setProperty(BATCH_SIZE_CONFIG, (32 * 1024).toString())
+        setProperty(COMPRESSION_TYPE_CONFIG, "lz4")
+    }
+
+    KafkaFactory.producer<String, String>(properties).use {
 
         val eventHandler = WikimediaChangeHandler(
             producer = this,

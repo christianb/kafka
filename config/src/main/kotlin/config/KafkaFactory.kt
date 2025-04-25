@@ -12,9 +12,14 @@ import java.util.Properties
 
 object KafkaFactory {
     /**
-     * Creates a new producer
+     * Creates a new producer.
+     *
+     * @param [properties] additional properties. You do not need to incl [KafkaConfig.producerProperties]
      */
-    fun <K, V> producer(): KafkaProducer<K, V> = KafkaProducer<K, V>(KafkaConfig.producerProperties)
+    fun <K, V> producer(properties: Properties): KafkaProducer<K, V> {
+        properties.putAll(KafkaConfig.producerProperties)
+        return KafkaProducer<K, V>(properties)
+    }
 
     /**
      * Creates a new consumer.

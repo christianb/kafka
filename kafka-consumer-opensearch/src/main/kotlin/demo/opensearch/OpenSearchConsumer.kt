@@ -69,7 +69,10 @@ fun main() {
                 bulkRequest.add(indexRequest)
             }
 
-            if (bulkRequest.numberOfActions() == 0) continue
+            if (bulkRequest.numberOfActions() == 0) {
+                log.info("no data received ...")
+                continue
+            }
 
             try {
                 val response = openSearchClient.bulk(bulkRequest, DEFAULT)

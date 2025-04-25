@@ -18,12 +18,9 @@ fun main() {
     }
 
     KafkaFactory.producer<String, String>(properties).use {
-        val eventHandler = WikimediaChangeHandler(
-            producer = this,
-            topic = WIKIMEDIA_TOPIC
-        )
-        val url = "https://stream.wikimedia.org/v2/stream/recentchange"
-        val eventSource = EventSource.Builder(eventHandler, URI.create(url)).build()
+        val eventHandler = WikimediaChangeHandler(producer = this, topic = WIKIMEDIA_TOPIC)
+        val uri = URI.create("https://stream.wikimedia.org/v2/stream/recentchange")
+        val eventSource = EventSource.Builder(eventHandler, uri).build()
 
         eventSource.start()
 

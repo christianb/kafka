@@ -3,25 +3,21 @@
 # Change to the directory of the script
 cd "$(dirname "$0")" || exit
 
-NODE1_PROPERTIES="../config/node.1.properties"
 NODE1_LOG="../node1.log"
-
-NODE2_PROPERTIES="../config/node.2.properties"
 NODE2_LOG="../node2.log"
-
-NODE3_PROPERTIES="../config/node.3.properties"
 NODE3_LOG="../node3.log"
 
-rm $NODE1_LOG $NODE2_LOG $NODE3_LOG
+log_files=("$NODE1_LOG" "$NODE2_LOG" "$NODE3_LOG")
 
-# Start Node 1
-nohup kafka-server-start $NODE1_PROPERTIES > $NODE1_LOG 2>&1 &
+for file in "${log_files[@]}"; do
+    if [ -e "$file" ]; then
+        rm "$file"
+        echo "removed: $file"
+    fi
+done
 
-# Start Node 2
-nohup kafka-server-start $NODE2_PROPERTIES > $NODE2_LOG 2>&1 &
+nohup kafka-server-start "../config/node.1.properties" > $NODE1_LOG 2>&1 &
+nohup kafka-server-start "../config/node.2.properties" > $NODE2_LOG 2>&1 &
+nohup kafka-server-start "../config/node.3.properties" > $NODE3_LOG 2>&1 &
 
-# Start Node 3
-nohup kafka-server-start $NODE3_PROPERTIES > $NODE3_LOG 2>&1 &
-
-# Optional: Print a message indicating that the nodes have been started
 echo "Kafka nodes are starting in the background. Logs are being written to node1.log, node2.log, and node3.log."

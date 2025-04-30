@@ -10,7 +10,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 import java.util.*
 
 object KafkaConfig {
-    private const val SERVER_ADDRESS = "127.0.0.1:9092"
+    private const val SERVER_ADDRESS = "127.0.0.1:9094"
 
     val producerProperties = Properties().apply {
         setProperty(BOOTSTRAP_SERVERS_CONFIG, SERVER_ADDRESS) // connect unsecure to local host
